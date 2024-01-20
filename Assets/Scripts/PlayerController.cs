@@ -56,6 +56,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float playerSpeed = 2.0f;
     [SerializeField]
+    private float playerRotationSpeed = 0.4f;
+    [SerializeField]
     private float gravityValue = -9.81f;
     [SerializeField]
     private float frictionConstant = 0.001f;
@@ -67,6 +69,7 @@ public class PlayerController : MonoBehaviour
     private Vector3 playerVelocity;
     private PlayerInput playerInput;
     private bool groundedPlayer;
+    private float playerForwardSpeed;
 
     private InputAction moveAction;
 
@@ -76,11 +79,13 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         moveAction = playerInput.actions["Move"];
         playerVelocity = new Vector3(0,0,0);
+        playerForwardSpeed = 0f;
     }
     
 
     void Update()
     {
+        // The vehicle must not fall through the ground
         groundedPlayer = controller.isGrounded;
         if (groundedPlayer && playerVelocity.y < 0)
         {
@@ -88,24 +93,87 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 input = moveAction.ReadValue<Vector2>();
-        Vector3 move = new Vector3(input.x * playerSpeed, 0, input.y * playerSpeed);
+        
+        // Speed and rotation based movement //
+
+        // This will not work on a controller because the movement will be "boolean". lmao
+        if (input.y > 0)
+        {
+            playerForwardSpeed += playerSpeed;
+        } else if (input.y < 0)
+        {
+            playerForwardSpeed -= playerSpeed;
+        }
+
+        if (input.x > 0)
+        {
+            gameObject.transform.Rotate(0, playerRotationSpeed * Mathf.Atan(playerForwardSpeed), 0);
+        } else if (input.x < 0)
+        {
+            gameObject.transform.Rotate(0, -playerRotationSpeed * Mathf.Atan(playerForwardSpeed), 0);
+        }
+        
+
+
+        /*
+        // Vector-based movement //
+
+
+        // This will not work on a controller because the movement will be "boolean". lmao
+        Vector3 move = new Vector3(0,0,0);
+        if (input.x > 0)
+        {
+            move += transform.right * playerRotationSpeed * Mathf.Atan(playerVelocity.magnitude);
+        } else if (input.x < 0)
+        {
+            move -= transform.right * playerRotationSpeed * Mathf.Atan(playerVelocity.magnitude);
+        }
+
+        if (input.y > 0)
+        {
+            move += transform.forward * playerSpeed;
+        } else if (input.x < 0)
+        {
+            move -= transform.forward * playerSpeed;
+        }
+
+
         playerVelocity += move;
         
         // Friction
         Vector3 friction = -playerVelocity * frictionConstant;
-        Vector3 airResistance = new Vector3(-(float)Math.Pow(playerVelocity.x, 2f) * airResistanceConstant, 
-                                            -(float)Math.Pow(playerVelocity.y, 2f) * airResistanceConstant, 
-                                            -(float)Math.Pow(playerVelocity.z, 2f) * airResistanceConstant);
+        Vector3 airResistance = new Vector3(-(float)Math.Abs(playerVelocity.x) * playerVelocity.x * airResistanceConstant, 
+                                            -(float)Math.Abs(playerVelocity.y) * playerVelocity.y * airResistanceConstant, 
+                                            -(float)Math.Abs(playerVelocity.z) * playerVelocity.z * airResistanceConstant);
 
         playerVelocity += friction;
-        
+        playerVelocity += airResistance;
+
+                // If the player isn't moving in both the x and z direction
+        if (playerVelocity.x == 0 && playerVelocity.z == 0)
+        {
+            // Do nothing
+        } else
+        {
+            // Update the player heading
+            gameObject.transform.forward = new Vector3(playerVelocity.x, 0, playerVelocity.z);
+        }
+        */
+
+        playerVelocity = transform.forward * playerForwardSpeed;
+
+        // Friction
+        playerVelocity -= transform.forward * frictionConstant * playerForwardSpeed;
+        playerVelocity -= transform.forward * airResistanceConstant * playerForwardSpeed * Math.Abs(playerForwardSpeed);
+
+        // Y-axis movement will break this probably
+        playerForwardSpeed = playerVelocity.magnitude;
+
+        // This screws everything up 
         playerVelocity.y += gravityValue * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
 
-        if (playerVelocity.x != 0 && playerVelocity.y != 0)
-        {
-            gameObject.transform.forward = new Vector3(playerVelocity.x, 0, playerVelocity.y);
-        }
+
 
     }
 }
