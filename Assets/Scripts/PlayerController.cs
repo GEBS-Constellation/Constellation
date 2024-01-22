@@ -107,11 +107,19 @@ public class PlayerController : MonoBehaviour
 
         if (input.x > 0)
         {
-            gameObject.transform.Rotate(0, playerRotationSpeed * Mathf.Atan(playerForwardSpeed), 0);
+            float r = 0.4f;
+            float vx = Mathf.Pow(playerForwardSpeed, 2) / r * Time.deltaTime;
+            //gameObject.transform.Rotate(0, Mathf.Abs(playerForwardSpeed) > 0 ? Mathf.Atan(vx / playerForwardSpeed) : 0, 0);
+            gameObject.transform.Rotate(0, playerForwardSpeed * Mathf.Atan(1 / playerForwardSpeed), 0);
         } else if (input.x < 0)
         {
-            gameObject.transform.Rotate(0, -playerRotationSpeed * Mathf.Atan(playerForwardSpeed), 0);
+            float r = 0.4f;
+            float vx = Mathf.Pow(playerForwardSpeed, 2) / r * Time.deltaTime;
+            //gameObject.transform.Rotate(0, Mathf.Abs(playerForwardSpeed) > 0 ? -Mathf.Atan(vx / playerForwardSpeed) : 0, 0);
+            gameObject.transform.Rotate(0, -playerForwardSpeed * Mathf.Atan(1 / playerForwardSpeed), 0);
         }
+
+        // Idea: Newton 2 law, car mass (acc/deceleration)
         
 
 
