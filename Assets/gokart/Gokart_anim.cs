@@ -5,15 +5,17 @@ using UnityEngine;
 
 public class Gokart_anim : MonoBehaviour
 {
+    public Transform player;
     public Transform[] wheels = new Transform[] {};
-    public Transform[] body = new Transform[] {};
-    private List<Vector3> bodyPos = new List<Vector3>();
+    public Transform body;
     public Transform steering_wheel;
     public float turning_angle;
     public float turning_speed;
     public float wheel_speed;
     public float vibration_speed;
     public float vibration_strength;
+    public float lean_strength;
+    public float lean_speed;
     public float turn;
     public float gas;
     public float vel;
@@ -24,9 +26,7 @@ public class Gokart_anim : MonoBehaviour
     //Exhaust fire
     //Tire smoke
     void Start() {
-        for (int i = 0; i < body.Length; i++) {
-            bodyPos.Add(body[i].position);
-        }
+        
     }
     void Update() {
         // Input
@@ -69,8 +69,9 @@ public class Gokart_anim : MonoBehaviour
         float noisey = Mathf.PerlinNoise(Time.timeSinceLevelLoad * vibration_speed, 10)-0.5f;
         float noisez = Mathf.PerlinNoise(Time.timeSinceLevelLoad * vibration_speed, 20)-0.5f;
         float strength = vibration_strength * Mathf.Lerp(1, 2, gas*10f);
-        for (int i = 0; i < body.Length; i++) {
-            body[i].position = bodyPos[i] + new Vector3(noisex * strength, noisey * strength, noisez * strength);
-        }
+        body.localPosition = new Vector3(noisex * strength, noisey * strength, noisez * strength);
+
+        // Car lean
+        body.localRotation = Quaternion.Lerp(body.localRotation, Quaternion.Euler(-turn*lean_strength, 0, 0), lean_speed);
     }
 }
