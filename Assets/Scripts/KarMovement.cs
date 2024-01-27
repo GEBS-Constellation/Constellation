@@ -25,10 +25,16 @@ public class KarMovement : MonoBehaviour
 
         //Turning
         if (Input.GetKey(KeyCode.Space)) {
-            transform.Rotate(0, turn, 0);
+            transform.Rotate(0, turn*Time.deltaTime*300, 0);
         } else {
             transform.Rotate(0, turn*Mathf.Atan(rb.velocity.magnitude)*turnSpeed, 0);
-            rb.velocity = transform.forward * rb.velocity.magnitude;
+            float y_vel = rb.velocity.y;
+            rb.velocity -= new Vector3(0, rb.velocity.y, 0);
+            Vector3 forward = transform.forward;
+            forward.y = 0;
+            forward = forward.normalized;
+            rb.velocity = forward * rb.velocity.magnitude;
+            rb.velocity += new Vector3(0, y_vel, 0);
         }
         
     }
