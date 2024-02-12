@@ -10,10 +10,14 @@ public class KarMovement : MonoBehaviour
     public float turnForce;
     public float driftTurnSpeed;
     public bool isDrifting;
+    public float centerOfMassY = -0.2f;
 
     void Start()
     {
         isDrifting = false;
+
+        // Lower the center of mass to make the car more stable
+        rb.centerOfMass = new Vector3(0, centerOfMassY, 0);
     }
 
     // Update is called once per frame
@@ -74,6 +78,7 @@ public class KarMovement : MonoBehaviour
             rb.transform.position = new Vector3(-24.9f, 1.23f, -8.1f);
             rb.transform.rotation = new Quaternion(0, 0, 0, 0);
         }
+
         
     }
 }
