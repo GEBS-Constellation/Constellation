@@ -17,7 +17,7 @@ public class KarMovement : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         // Controls
         if (Input.GetKey("w")) {
@@ -45,7 +45,7 @@ public class KarMovement : MonoBehaviour
         //Turning
         if (Input.GetKey(KeyCode.Space)) {
             // Drifting
-            transform.Rotate(0, turn*driftTurnSpeed*Time.deltaTime*300, 0);
+            transform.Rotate(0, turn*driftTurnSpeed, 0);
             isDrifting = true;
         } else {
             // Regular driving
@@ -58,7 +58,10 @@ public class KarMovement : MonoBehaviour
             forward = forward.normalized;
             rb.velocity = forward * rb.velocity.magnitude;
             rb.velocity += new Vector3(0, y_vel, 0); */
-            transform.Rotate(0, turn*Mathf.Atan(rb.velocity.magnitude*0.5f)*turnSpeed*Time.deltaTime*100, 0);
+            
+            // transform.Rotate(0, turn*Mathf.Atan(rb.velocity.magnitude*0.5f)*turnSpeed*Time.deltaTime*100, 0);
+            float vel = rb.velocity.magnitude*0.15f;
+            transform.Rotate(0, turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, 0);
 
 
 
