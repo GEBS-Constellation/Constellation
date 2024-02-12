@@ -66,6 +66,14 @@ public class KarMovement : MonoBehaviour
 
 
         }
+
+        // Reset car position
+        if (Input.GetKeyUp("r")) {
+            rb.velocity = new Vector3(0, 0, 0);
+            rb.angularVelocity = new Vector3(0, 0, 0);
+            rb.transform.position = new Vector3(-24.9f, 1.23f, -8.1f);
+            rb.transform.rotation = new Quaternion(0, 0, 0, 0);
+        }
         
     }
 }
