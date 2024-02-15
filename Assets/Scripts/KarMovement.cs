@@ -10,6 +10,8 @@ public class KarMovement : MonoBehaviour
     public float turnForce;
     public float driftTurnSpeed;
     public bool isDrifting;
+
+    // This might be below the ground idk
     public float centerOfMassY = -0.2f;
 
     void Start()
@@ -67,6 +69,9 @@ public class KarMovement : MonoBehaviour
             float vel = rb.velocity.magnitude*0.15f;
             transform.Rotate(0, turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, 0);
 
+            // Rotate the velocity vector to the car's local space
+            // This might desync the car's velocity from the car's rotation IDK
+            rb.velocity = Quaternion.AngleAxis((turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed), transform.up) * rb.velocity;
 
 
         }
