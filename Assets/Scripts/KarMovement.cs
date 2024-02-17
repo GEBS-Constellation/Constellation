@@ -74,7 +74,7 @@ public class KarMovement : MonoBehaviour
 
             // Rotate the velocity vector to the car's local space
             // This might desync the car's velocity from the car's rotation IDK
-            rb.velocity = Quaternion.AngleAxis((turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed), transform.up) * rb.velocity;
+            rb.velocity = Quaternion.AngleAxis(turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, transform.up) * rb.velocity;
         }
 
         if (isReturningNormal && !isTrulyDrifting) {
@@ -83,8 +83,8 @@ public class KarMovement : MonoBehaviour
 
             // Use the movetowards function to smoothly return to normal driving
             rb.velocity = (Vector3.MoveTowards(rb.velocity.normalized, transform.forward, driftReturnSpeed))*rb.velocity.magnitude;
-        
-            if (preVel == rb.velocity) {
+
+            if (transform.forward == rb.velocity.normalized) {
                 // Kar fully returned to normal driving
                 isReturningNormal = false;
             }
@@ -92,11 +92,16 @@ public class KarMovement : MonoBehaviour
 
         // If the car is on a slope, make it stick to the slope a little bit
         if (isGrounded) {
-            // Add a downwards force
-            rb.AddForce(-transform.up * 10 * Mathf.Atan(Vector3.Angle(transform.up, Vector3.up)-90));
+            // Calculate the angle between the car's up direction and the world up direction
+            float angle = Vector3.Angle(transform.up, Vector3.up) - 90f;
 
-            // Cancel out gravity
-            rb.AddForce(Vector3.up * 10 * Mathf.Atan(Vector3.Angle(transform.up, Vector3.up)-90));
+            // Apply a downward force based on the angle to stick to the slope
+            float downwardForce = -10 * Mathf.Atan(angle);
+            rb.AddForce(transform.up * downwardForce);
+
+            // Cancel out gravity to prevent excessive downward force
+            float upwardForce = 10 * Mathf.Atan(angle);
+            rb.AddForce(Vector3.up * upwardForce);
         }
             
 
