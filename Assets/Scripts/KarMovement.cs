@@ -16,6 +16,8 @@ public class KarMovement : MonoBehaviour
     public float centerOfMassY = -0.2f;
     public Vector3 endOfDriftVel = new Vector3(0, 0, 0);
     public float driftReturnSpeed = 0.1f;
+    public float karDistanceFromGround = 0.5f;
+    public bool isGrounded;
 
     void Start()
     {
@@ -30,11 +32,19 @@ public class KarMovement : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        // Check if the car is on the ground
+        if (Physics.Raycast(transform.position, -transform.up, karDistanceFromGround)) {
+            // The car is on the ground, allow acceleration and drifting
+            isGrounded = true;
+        } else {
+            // The car is not on the ground, don't allow acceleration and drifting
+            isGrounded = false;
+        }
         // Controls
-        if (Input.GetKey("w")) {
+        if (Input.GetKey("w") && isGrounded) {
             rb.AddForce(transform.forward * force);
         }
-        if (Input.GetKey("s")) {
+        if (Input.GetKey("s") && isGrounded) {
             rb.AddForce(-transform.forward * force);
         }
         int turn = 0;
@@ -45,8 +55,8 @@ public class KarMovement : MonoBehaviour
             turn += 1;
         }
 
-        //Turning
-        if (Input.GetKey(KeyCode.Space)) {
+        // Turning of different types
+        if (Input.GetKey(KeyCode.Space) && isGrounded) {
             // Drifting
             transform.Rotate(0, turn*driftTurnSpeed, 0);
             isTrulyDrifting = true;
