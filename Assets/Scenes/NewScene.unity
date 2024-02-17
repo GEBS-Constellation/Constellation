@@ -429,7 +429,7 @@ Transform:
   m_GameObject: {fileID: 496674312}
   serializedVersion: 2
   m_LocalRotation: {x: 0.24210519, y: -0, z: -0, w: 0.97025007}
-  m_LocalPosition: {x: -25.7, y: 6.6, z: -17.4}
+  m_LocalPosition: {x: -25.36, y: 5.85, z: -32.88}
   m_LocalScale: {x: 1, y: 3.5526254, z: 1.862277}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -869,12 +869,12 @@ PrefabInstance:
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 74.9
+      value: 0.88
       objectReference: {fileID: 0}
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 151.2
+      value: -22.5
       objectReference: {fileID: 0}
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
@@ -1127,6 +1127,8 @@ MonoBehaviour:
   centerOfMassY: -0.2
   endOfDriftVel: {x: 0, y: 0, z: 0}
   driftReturnSpeed: 0.01
+  karDistanceFromGround: 0.5
+  isGrounded: 0
 --- !u!64 &1664019808
 MeshCollider:
   m_ObjectHideFlags: 0
