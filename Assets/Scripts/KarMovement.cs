@@ -9,14 +9,19 @@ public class KarMovement : MonoBehaviour
     public float turnSpeed;
     public float turnForce;
     public float driftTurnSpeed;
-    public bool isDrifting;
+    public bool isTrulyDrifting;
+    public bool isReturningNormal;
 
     // This might be below the ground idk
     public float centerOfMassY = -0.2f;
+    public Vector3 endOfDriftVel = new Vector3(0, 0, 0);
+    public float driftReturnSpeed = 0.1f;
 
     void Start()
     {
-        isDrifting = false;
+        // Initialise variables
+        isTrulyDrifting = false;
+        isReturningNormal = false;
 
         // Lower the center of mass to make the car more stable
         rb.centerOfMass = new Vector3(0, centerOfMassY, 0);
@@ -35,45 +40,44 @@ public class KarMovement : MonoBehaviour
         int turn = 0;
         if (Input.GetKey("a")) {
             turn -= 1;
-            if (!isDrifting){
-                //rb.AddForce(-transform.right * turnForce*Mathf.Atan(Vector3.Dot(rb.velocity, transform.forward))*Time.deltaTime*200);
-                rb.AddForce(-(rb.velocity - (Vector3.Dot(rb.velocity, transform.forward)*transform.forward)));
-            }
         }
         if (Input.GetKey("d")) {
             turn += 1;
-            if (!isDrifting){
-                //rb.AddForce(transform.right * turnForce*Mathf.Atan(Vector3.Dot(rb.velocity, transform.forward))*Time.deltaTime*200);
-                rb.AddForce(-(rb.velocity - (Vector3.Dot(rb.velocity, transform.forward)*transform.forward)));
-            }
         }
 
         //Turning
         if (Input.GetKey(KeyCode.Space)) {
             // Drifting
             transform.Rotate(0, turn*driftTurnSpeed, 0);
-            isDrifting = true;
+            isTrulyDrifting = true;
+            // It's not actually returning to normal driving yet, but it will when isTrulyDrifting is set to false
+            isReturningNormal = true;
+            endOfDriftVel = rb.velocity;
+        
         } else {
             // Regular driving
-            isDrifting = false;
-/*             transform.Rotate(0, turn*Mathf.Atan(rb.velocity.magnitude)*turnSpeed, 0);
-            float y_vel = rb.velocity.y;
-            rb.velocity -= new Vector3(0, rb.velocity.y, 0);
-            Vector3 forward = transform.forward;
-            forward.y = 0;
-            forward = forward.normalized;
-            rb.velocity = forward * rb.velocity.magnitude;
-            rb.velocity += new Vector3(0, y_vel, 0); */
+            isTrulyDrifting = false;
             
-            // transform.Rotate(0, turn*Mathf.Atan(rb.velocity.magnitude*0.5f)*turnSpeed*Time.deltaTime*100, 0);
+            // Turn the car according to the turn variable
             float vel = rb.velocity.magnitude*0.15f;
             transform.Rotate(0, turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, 0);
 
             // Rotate the velocity vector to the car's local space
             // This might desync the car's velocity from the car's rotation IDK
             rb.velocity = Quaternion.AngleAxis((turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed), transform.up) * rb.velocity;
+        }
 
+        if (isReturningNormal && !isTrulyDrifting) {
+            // Just stopped drifting, return car to normal driving
+            Vector3 preVel = rb.velocity;
 
+            // Use the movetowards function to smoothly return to normal driving
+            rb.velocity = (Vector3.MoveTowards(rb.velocity.normalized, transform.forward, driftReturnSpeed))*rb.velocity.magnitude;
+        
+            if (preVel == rb.velocity) {
+                // Kar fully returned to normal driving
+                isReturningNormal = false;
+            }
         }
 
         // Reset car position

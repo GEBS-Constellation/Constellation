@@ -903,7 +903,12 @@ MonoBehaviour:
   turnSpeed: 5
   turnForce: 3
   driftTurnSpeed: 3
-  isDrifting: 0
+  isTrulyDrifting: 0
+  isReturningNormal: 0
+  centerOfMassY: -0.2
+  endOfDriftVel: {x: 0, y: 0, z: 0}
+  driftReturnTime: 1
+  driftReturnSpeed: 0.01
 --- !u!64 &1664019808
 MeshCollider:
   m_ObjectHideFlags: 0
