@@ -90,6 +90,18 @@ public class KarMovement : MonoBehaviour
             }
         }
 
+        // If the car is on a slope, make it stick to the slope a little bit
+        if (isGrounded) {
+            // Add a downwards force
+            rb.AddForce(-transform.up * 10 * Mathf.Atan(Vector3.Angle(transform.up, Vector3.up)-90));
+
+            // Cancel out gravity
+            rb.AddForce(Vector3.up * 10 * Mathf.Atan(Vector3.Angle(transform.up, Vector3.up)-90));
+        }
+            
+
+
+
         // Reset car position
         if (Input.GetKeyUp("r")) {
             rb.velocity = new Vector3(0, 0, 0);
