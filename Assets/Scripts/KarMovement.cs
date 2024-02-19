@@ -74,7 +74,13 @@ public class KarMovement : MonoBehaviour
 
             // Rotate the velocity vector to the car's local space
             // This might desync the car's velocity from the car's rotation IDK
-            rb.velocity = Quaternion.AngleAxis(turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, transform.up) * rb.velocity;
+
+            // If not grounded, only allow rotation in the x and z axes
+            if (!isGrounded) {
+                rb.velocity = Quaternion.AngleAxis(turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, new Vector3(0,1,0)) * rb.velocity;
+            } else {
+                rb.velocity = Quaternion.AngleAxis(turn*(vel/(1+Mathf.Pow(vel-1, 2)))*turnSpeed, transform.up) * rb.velocity;
+            }
         }
 
         if (isReturningNormal && !isTrulyDrifting) {
@@ -104,9 +110,6 @@ public class KarMovement : MonoBehaviour
             rb.AddForce(Vector3.up * upwardForce);
         }
             
-
-
-
         // Reset car position
         if (Input.GetKeyUp("r")) {
             rb.velocity = new Vector3(0, 0, 0);
