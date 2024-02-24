@@ -18,6 +18,9 @@ public class KarMovement : MonoBehaviour
     public float driftReturnSpeed = 0.1f;
     public float karDistanceFromGround = 0.5f;
     public bool isGrounded;
+    public Vector3 startPos;
+    public Quaternion startRot;
+    public float karTiltCheckOffset = 0.1f;
 
     void Start()
     {
@@ -27,6 +30,47 @@ public class KarMovement : MonoBehaviour
 
         // Lower the center of mass to make the car more stable
         rb.centerOfMass = new Vector3(0, centerOfMassY, 0);
+
+        // Set the start position
+        startPos = rb.transform.position;
+        startRot = rb.transform.rotation;
+    }
+
+    void rotateKarToGround(string tiltDirection) {
+        // Tilt direction can be "left", "right", "forward" or "backward" and denotes
+        // the part of the kar that is lifted off the ground
+
+        // Rotate the kar back until it is level with the ground and then reset it's angular momentum
+        if (tiltDirection == "left") {
+            // Rotate the kar to the right until it is level with the ground
+            rb.transform.Rotate(0, 1, 0);
+            if (Physics.Raycast(transform.position, -transform.up-transform.right*karDistanceFromGround*karTiltCheckOffset, karDistanceFromGround)) {
+                // The kar is level with the ground, stop rotating
+                rb.angularVelocity = new Vector3(0, 0, 0);
+            }
+        } else if (tiltDirection == "right") {
+            // Rotate the kar to the left until it is level with the ground
+            rb.transform.Rotate(0, -1, 0);
+            if (Physics.Raycast(transform.position, -transform.up+transform.right*karDistanceFromGround*karTiltCheckOffset, karDistanceFromGround)) {
+                // The kar is level with the ground, stop rotating
+                rb.angularVelocity = new Vector3(0, 0, 0);
+            }
+        } else if (tiltDirection == "forward") {
+            // Rotate the kar backward until it is level with the ground
+            rb.transform.Rotate(1, 0, 0);
+            if (Physics.Raycast(transform.position, -transform.up+transform.forward*karDistanceFromGround*karTiltCheckOffset, karDistanceFromGround)) {
+                // The kar is level with the ground, stop rotating
+                rb.angularVelocity = new Vector3(0, 0, 0);
+            }
+        } else if (tiltDirection == "backward") {
+            // Rotate the kar forward until it is level with the ground
+            rb.transform.Rotate(-1, 0, 0);
+            if (Physics.Raycast(transform.position, -transform.up-transform.forward*karDistanceFromGround*karTiltCheckOffset, karDistanceFromGround)) {
+                // The kar is level with the ground, stop rotating
+                rb.angularVelocity = new Vector3(0, 0, 0);
+            }
+        }
+    
     }
 
     // Update is called once per frame
@@ -99,23 +143,76 @@ public class KarMovement : MonoBehaviour
         // If the car is on a slope, make it stick to the slope a little bit
         if (isGrounded) {
             // Calculate the angle between the car's up direction and the world up direction
-            float angle = Vector3.Angle(transform.up, Vector3.up) - 90f;
+            float angle = Vector3.Angle(transform.up, Vector3.up);
 
             // Apply a downward force based on the angle to stick to the slope
-            float downwardForce = -10 * Mathf.Atan(angle);
+            float downwardForce = -10 * Mathf.Abs(Mathf.Atan(angle)*2/Mathf.PI);
             rb.AddForce(transform.up * downwardForce);
 
             // Cancel out gravity to prevent excessive downward force
-            float upwardForce = 10 * Mathf.Atan(angle);
+            float upwardForce = 10 * Mathf.Abs(Mathf.Atan(angle)*2/Mathf.PI);
             rb.AddForce(Vector3.up * upwardForce);
         }
             
+        // Planned addition:
+        // Check if the kar is on a tilt relative to the ground beneath by checking if raycasts in different downards directions hit the ground
+        // in a manner consistent with a plane below the kar
+            // Check if the car is tilted relative to the ground
+            
+        RaycastHit hit = new RaycastHit();
+        if (!Physics.Raycast(transform.position, -transform.up+transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up+transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("right");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up-transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up-transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("left");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up+transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up+transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("forward");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up-transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up-transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("backward");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        }
+        // If the car is on a tilt, force it to untilt somehow
+        // If the car is somewhat above the ground, force it down towards the ground somehow
+
+
+
+
         // Reset car position
         if (Input.GetKeyUp("r")) {
             rb.velocity = new Vector3(0, 0, 0);
             rb.angularVelocity = new Vector3(0, 0, 0);
-            rb.transform.position = new Vector3(-24.9f, 1.23f, -8.1f);
-            rb.transform.rotation = new Quaternion(0, 0, 0, 0);
+            rb.transform.position = startPos;
+            rb.transform.rotation = startRot;
         }
 
         

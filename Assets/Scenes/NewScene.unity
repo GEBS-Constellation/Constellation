@@ -1423,17 +1423,17 @@ PrefabInstance:
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.3
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.3
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.3
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 1607278233233748211, guid: cc43448997f245a4bb772f8dd3a0ba8d,
         type: 3}
@@ -1836,6 +1836,8 @@ MonoBehaviour:
   driftReturnSpeed: 0.01
   karDistanceFromGround: 0.5
   isGrounded: 0
+  startPos: {x: 0, y: 0, z: 0}
+  startRot: {x: 0, y: 0, z: 0, w: 0}
 --- !u!64 &1664019808
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -1868,7 +1870,7 @@ Rigidbody:
   serializedVersion: 4
   m_Mass: 1
   m_Drag: 0.02
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0.3
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
