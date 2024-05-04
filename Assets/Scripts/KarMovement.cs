@@ -18,6 +18,8 @@ public class KarMovement : MonoBehaviour
     public float driftReturnSpeed = 0.1f;
     public float karDistanceFromGround = 0.5f;
     public bool isGrounded;
+    public Vector3 startPos;
+    public Quaternion startRot;
 
     void Start()
     {
@@ -27,6 +29,10 @@ public class KarMovement : MonoBehaviour
 
         // Lower the center of mass to make the car more stable
         rb.centerOfMass = new Vector3(0, centerOfMassY, 0);
+
+        // Set the start position
+        startPos = rb.transform.position;
+        startRot = rb.transform.rotation;
     }
 
     // Update is called once per frame
@@ -114,8 +120,8 @@ public class KarMovement : MonoBehaviour
         if (Input.GetKeyUp("r")) {
             rb.velocity = new Vector3(0, 0, 0);
             rb.angularVelocity = new Vector3(0, 0, 0);
-            rb.transform.position = new Vector3(-24.9f, 1.23f, -8.1f);
-            rb.transform.rotation = new Quaternion(0, 0, 0, 0);
+            rb.transform.position = startPos;
+            rb.transform.rotation = startRot;
         }
 
         
