@@ -21,7 +21,6 @@ public class KarMovement : MonoBehaviour
     public Vector3 startPos;
     public Quaternion startRot;
     public float karTiltCheckOffset = 0.1f;
-    public Vector3 gravitish_last = new Vector3(0, 0, 0);
 
     void Start()
     {
@@ -36,13 +35,8 @@ public class KarMovement : MonoBehaviour
         startPos = rb.transform.position;
         startRot = rb.transform.rotation;
 
-        // Remove gravity
-        rb.useGravity = false;
-
-        // Set custom gravity
-        fakeGravity(firstRun: true);
-
-
+        // Double the gravity
+        Physics.gravity = new Vector3(0, -19.62f, 0);       
     }
 
     void rotateKarToGround(string tiltDirection) {
@@ -82,28 +76,22 @@ public class KarMovement : MonoBehaviour
     
     }
 
-    void fakeGravity(bool firstRun) {
+    void betterRotateKarToGround() {
         // Uses linear algebra magic
 
         // Get the normal vector of the surface the kar is on-ish
         RaycastHit hit = new RaycastHit();
-        Physics.Raycast(rb.transform.position, -rb.transform.up, out hit, karDistanceFromGround*30);
+        Physics.Raycast(rb.transform.position, -rb.transform.up, out hit, karDistanceFromGround*3);
 
         Vector3 normal = hit.normal;
 
-        // Save the force for later use
-        Vector3 gravitish = -normal*9.82f;
+        // Rotate the kar to be parallel with the surface
+        rb.transform.rotation = Quaternion.FromToRotation(rb.transform.up, normal) * rb.transform.rotation;
 
-        if (!firstRun) {
-            //Remove the previous fake gravity force
-            //rb.AddForce(-gravitish_last);
-        }
-        
-        // Push the kar down towards the ground
-        rb.AddForce(gravitish);
+        // Rotate the kar's velocity accordingly
+        rb.velocity = Quaternion.FromToRotation(rb.transform.up, normal) * rb.velocity;
 
-        gravitish_last = gravitish;
-        
+
     }
 
     // Update is called once per frame
@@ -180,17 +168,91 @@ public class KarMovement : MonoBehaviour
             }
         }
 
-        // Fake gravity
-        fakeGravity(firstRun: false);
+        // If the car is on a slope, make it stick to the slope a little bit
+        if (isGrounded) {
+            // Calculate the angle between the car's up direction and the world up direction
+            float angle = Vector3.Angle(transform.up, Vector3.up);
+
+            // Apply a downward force based on the angle to stick to the slope
+            float downwardForce = -19.62f * Mathf.Abs(Mathf.Atan(angle)*2/Mathf.PI);
+            rb.AddForce(transform.up * downwardForce);
+
+            // Cancel out gravity to prevent excessive downward force
+            float upwardForce = 19.62f * Mathf.Abs(Mathf.Atan(angle)*2/Mathf.PI);
+            rb.AddForce(Vector3.up * upwardForce);
+        }
 
         // If the car is in the air, deccelerate it heavily
-        //if (!isGrounded) {
+        if (!isGrounded) {
             //rb.velocity = new Vector3(rb.velocity.x*0.99f, rb.velocity.y, rb.velocity.z*0.99f);
             //rb.angularVelocity = new Vector3(rb.angularVelocity.x*0.95f, rb.angularVelocity.y*0.95f, rb.angularVelocity.z*0.95f);
 
             //rb.velocity = new Vector3(rb.velocity.x, rb.velocity.y-0.1f, rb.velocity.z);
-            //betterRotateKarToGround();
-        //}
+            betterRotateKarToGround();
+        }
+
+        /*
+        if (!Physics.Raycast(transform.position, -transform.up+transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up+transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("right");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up-transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up-transform.right*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("left");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up+transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up+transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("forward");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        } else if (!Physics.Raycast(transform.position, -transform.up-transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+            // The kar is at an unacceptable tilt
+            // Force the kar to untilt 
+            while (!Physics.Raycast(transform.position, -transform.up-transform.forward*karDistanceFromGround*karTiltCheckOffset)) {
+                rotateKarToGround("backward");
+            }
+
+
+            // tp the kar to the ground
+            rb.transform.position = new Vector3(rb.transform.position.x, hit.point.y, rb.transform.position.z);
+        }
+        // If the car is on a tilt, force it to untilt somehow
+        // If the car is somewhat above the ground, force it down towards the ground somehow
+        */
+
+        /*
+        // If the Kar is above the ground, force it down
+        RaycastHit hit = new RaycastHit();
+
+        if (Physics.Raycast(rb.transform.position, -rb.transform.up, out hit)) {
+            // Get the normal vector of the surface the kar is on-ish
+            Vector3 normal = hit.normal;
+            
+            // Calculate force scaling factor based on distance and angle
+            float forceScale = Mathf.Pow(0.1f*hit.distance,2)*Mathf.Pow((90-Mathf.Abs(Vector3.Angle(normal, rb.transform.up)))/90, 2);
+
+            // Push the kar down towards the ground
+            rb.AddForce(-normal*forceScale, mode: ForceMode.Impulse);
+        }
+        */
+
 
         // Reset car position
         if (Input.GetKeyUp("r")) {
